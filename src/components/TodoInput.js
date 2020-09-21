@@ -1,42 +1,32 @@
-import React from "react"
+import React, { useState } from "react"
 
-class TodoInput extends React.Component{
+const TodoInput = props => {
+  const [title, setTitle] = useState("")
 
-  state = {
-    title: ""
+  const onChange = e => {
+    setTitle(e.target.value)
   }
 
-  onChange = e => {
-    this.setState({
-      title: e.target.value
-    })
-  }
-
-  onSubmit = e => {
+  const onSubmit = e => {
     e.preventDefault()
     
-    this.props.handleNewTodo(this.state.title)
-    
-    this.setState({
-      title: ""
-    })
+    props.handleNewTodo(title)
+    setTitle("")   
   }
 
-  render(){
-    return(
-      <form onSubmit={this.onSubmit} className="form-container">
-        <input
-          name="title"
-          type="text" 
-          className="input-text"
-          placeholder="Add Todo..." 
-          value={this.state.title} 
-          onChange={this.onChange}
-        />
-        <input type="submit" className="input-submit" value="Submit"/>
-      </form>
-    )
-  }
+  return (
+    <form onSubmit={onSubmit} className="form-container">
+      <input
+        name="title"
+        type="text" 
+        className="input-text"
+        placeholder="Add Todo..." 
+        value={title} 
+        onChange={onChange}
+      />
+      <input type="submit" className="input-submit" value="Submit"/>
+    </form>
+  )
 }
 
 export default TodoInput

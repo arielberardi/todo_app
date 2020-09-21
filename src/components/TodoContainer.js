@@ -1,79 +1,73 @@
 import React from "react"
-import {v4 as uuidv4} from "uuid"
+import { useState, useEffect } from "react"
+import axios from "axios"
 
 import TodosList from "./TodosList"
 import TodoInput from "./TodoInput"
+import TodoHeader from "./TodoHeader"
 
-function TodoHeader(){
-  const headerStyle = {
-    padding: "20px 0",
-    lineHeight: "2em",
-  }
+const TodoContainer = props => {
+  const [todos, setTodos] = useState([])
+  const [show, setShow] = useState(false)
 
-  return (
-    <header style={headerStyle}>
-      <h1 style={{ fontSize: "25px", marginBottom: "15px" }}>Simple Todo APP</h1>
-      <p style={{ fontSize: "19px" }}>Please add to-dos item(s) through the input field</p>
-    </header>
-  )
-}
+  const handleCheckTodo = (id) => {
 
-class TodoContainer extends React.Component {
-  state = {
-    todos: [
-      { id: uuidv4(), title: "Setup development", completed: true },
-      { id: uuidv4(), title: "Develop website and add content", completed: false },
-      { id: uuidv4(), title: "Deploy to live server", completed: false }
-    ]
-  }
-
-  handleCheckTodo = (id) => {
-
-    this.setState({
-      todos: this.state.todos.map(todo => {
-        if(todo.id === id){
+    setTodos(
+      todos.map(todo => {
+        if(todo.id == id) {
           todo.completed = !todo.completed
         }
-        return todo;
+        return todo 
       })
-    })
+    )
+
+    setShow(!show)
   }
 
-  handleDeleteTodo = (id) => {
+  const handleDeleteTodo = (id) => {
 
-    this.setState({
-      todos: this.state.todos.filter(todo => {
-        return todo.id !== id
-      })
-    })
+    axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
+      .then(response => 
+        setTodos([
+          ...todos.filter(todo => {
+            return todo.id !== id
+          })
+        ])
+      )
   }
 
-  handleNewTodo = (title) => {
-    console.log("new todo: ", title)
+  const handleNewTodo = (title) => {
 
-    const newTodo = {
-      id: uuidv4(),
+    axios.post("https://jsonplaceholder.typicode.com/todos", {
       title: title,
-      completed: false
-    }
-    this.setState({
-      todos: [...this.state.todos, newTodo]
-    })
-  }
-
-  render(){
-    return (
-      <div>
-        <TodoHeader />
-        <TodoInput handleNewTodo={this.handleNewTodo} />
-        <TodosList 
-          todos={this.state.todos} 
-          handleCheckTodo={this.handleCheckTodo}
-          handleDeleteTodo={this.handleDeleteTodo}
-        />
-      </div>
+      completed: false,
+    })    
+    .then(response => 
+      setTodos([...todos, response.data])
     )
   }
+
+  // Equal to componentDidMount()
+  useEffect( () => {
+    console.log("test run")
+
+    axios.get("https://jsonplaceholder.typicode.com/todos", {
+        params: { _limit: 10 }
+      })
+      .then(response => setTodos(response.data))
+  }, [])
+
+  return (
+    <div>
+      <TodoHeader headerSpan={show} />
+      <TodoInput handleNewTodo={handleNewTodo} />
+      <TodosList 
+        todos={todos} 
+        handleCheckTodo={handleCheckTodo}
+        handleDeleteTodo={handleDeleteTodo}
+      />
+    </div>
+  )
 }
 
 export default TodoContainer
